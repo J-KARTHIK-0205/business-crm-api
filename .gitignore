@@ -1,0 +1,9 @@
+
+/vendor/
+/.env
+/.env.*
+*.log
+/config/database.local.php
+/test_db.php
+*service-account*.json
+firebase-adminsdk*.json
