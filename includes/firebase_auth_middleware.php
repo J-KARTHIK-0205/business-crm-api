@@ -9,7 +9,8 @@ use Kreait\Firebase\Exception\Auth\FailedToVerifyToken;
 function requireFirebaseUser(): string
 {
     global $firebaseAuth;
-    // Read the Authorization header.
+
+    // Read Authorization header.
     $headers = function_exists("getallheaders")
         ? getallheaders()
         : [];
@@ -23,12 +24,14 @@ function requireFirebaseUser(): string
         }
     }
 
-    // Fallback for servers that do not expose getallheaders().
+    // Fallback for Apache and other server configurations.
     if ($authorization === "") {
-        $authorization = $_SERVER["HTTP_AUTHORIZATION"] ?? "";
+        $authorization = $_SERVER["HTTP_AUTHORIZATION"]
+            ?? $_SERVER["REDIRECT_HTTP_AUTHORIZATION"]
+            ?? "";
     }
 
-    // Check for Bearer token.
+    // Extract Bearer token.
     if (
         !preg_match(
             '/^Bearer\s+(.+)$/i',
@@ -50,7 +53,7 @@ function requireFirebaseUser(): string
         // Verify Firebase ID token.
         $verifiedToken = $firebaseAuth->verifyIdToken($idToken);
 
-        // Get Firebase UID from verified token.
+        // Get Firebase UID.
         $uid = $verifiedToken->claims()->get("sub");
 
         if (!is_string($uid) || $uid === "") {
@@ -65,6 +68,8 @@ function requireFirebaseUser(): string
         return $uid;
 
     } catch (FailedToVerifyToken | InvalidArgumentException $e) {
+
+        error_log("Firebase token verification failed: " . $e->getMessage());
 
         sendResponse(
             false,
