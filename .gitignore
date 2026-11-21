@@ -7,3 +7,5 @@
 /test_db.php
 *service-account*.json
 firebase-adminsdk*.json
+
+/test_firebase.php
